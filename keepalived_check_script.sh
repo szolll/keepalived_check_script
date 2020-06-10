@@ -5,7 +5,7 @@
 # Usage: keepcheck.sh [service's! you want to have checked]
 # Example: keepcheck.sh sshd nginx mariadb your_custom_script
 # Place the script somewhere ( /usr/local/bin/ )
-# Prints 0 for "Ok", other than 1 for "service is broken"
+# Prints 0 for "Ok" and 1 for "service is broken"
 
 CHECK=$0
 SERVICE=$1
