@@ -1,0 +1,67 @@
+vrrp_script chk_haproxy {
+    script "pidof haproxy"
+    interval 1
+}
+
+global_defs {
+   # The email addresses the notification of the changes will be sent to
+   notification_email {
+     operations@copernica.com
+   }
+
+   # The from address in the notification emails
+   notification_email_from dedicated-router1
+
+   # The smtp server to use
+   smtp_server localhost
+
+   # the smtp connect timeout
+   smtp_connect_timeout 30
+
+   # The name of the setup
+   router_id DEDICATEDROUTER
+}
+
+vrrp_instance DEDICATEDROUTER {
+    interface bond0                   # Binding interface
+    garp_master_delay 3              # Delay for gratuitous ARP after MASTER state transition
+    smtp_alert                       # Send email notify during state transit
+    virtual_router_id 208            # VRRP VRI
+    advert_int 1                     # advertise activity every second
+
+    # we load the priority from the home dir, as this differs between server
+    include /home/copernica/priority.conf
+
+    # Used for the authentication of the vrrp packages
+    authentication {
+        auth_type PASS
+        auth_pass xxxxx
+    }
+
+    # All the virtual IP addresses
+    virtual_ipaddress {
+
+    10.32.57.155
+    }
+
+    #for ipv6
+    #virtual_ipaddress_excluded {
+    #    2a03:e280:0:1::129:193/64   dev eth0   # wstemp.copernica.nl
+    #}
+
+    # monitor these as well.
+    # go to FAULT state if any of these go down.
+    track_interface {
+        bond0
+	bond1
+    }
+	
+    track_script{
+	chk_haproxy
+    }
+
+    # store the currently active state for later retrieval
+    # notify_master "/home/copernica/PHP5/Resources/configfiles/loadbalancing/notify_master.sh"
+    # notify_backup "/bin/echo backup > /etc/keepalived/state"
+    # notify_fault  "/bin/echo fault  > /etc/keepalived/state"
+}
